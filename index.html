@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Meu App de Teste</title>
+
+  <!-- PWA padrão (Android / Chrome) -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#6C5CE7">
+
+  <!-- iOS específico -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TestApp">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(160deg, #6C5CE7, #341f97);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+    img.logo {
+      width: 96px;
+      height: 96px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    p { opacity: 0.85; margin-bottom: 32px; max-width: 320px; }
+
+    #btnInstalar {
+      background: white;
+      color: #341f97;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      display: none;
+      cursor: pointer;
+    }
+
+    #iosInstrucao {
+      display: none;
+      background: rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 14px;
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    #status {
+      margin-top: 24px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <img class="logo" src="/icons/icon-192.png" alt="Logo">
+  <h1>Meu App de Teste</h1>
+  <p>Esta página é um PWA. Teste a instalação no seu celular.</p>
+
+  <button id="btnInstalar">📲 Instalar App</button>
+
+  <div id="iosInstrucao">
+    📱 No iPhone: toque no botão <strong>Compartilhar</strong> (ícone do quadrado com seta) na barra do Safari e depois em <strong>"Adicionar à Tela de Início"</strong>.
+  </div>
+
+  <div id="status">Verificando suporte...</div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const btnInstalar = document.getElementById('btnInstalar');
+    const iosInstrucao = document.getElementById('iosInstrucao');
+
+    // Registrar o Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => statusEl.textContent = 'Service Worker registrado ✅')
+        .catch((err) => statusEl.textContent = 'Erro no Service Worker: ' + err);
+    } else {
+      statusEl.textContent = 'Service Worker não suportado neste navegador';
+    }
+
+    // Detectar iOS
+    const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    if (isIOS && !isStandalone) {
+      iosInstrucao.style.display = 'block';
+    }
+
+    // Prompt de instalação (Android/Chrome)
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      btnInstalar.style.display = 'inline-block';
+    });
+
+    btnInstalar.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('Resultado da instalação:', outcome);
+        btnInstalar.style.display = 'none';
+        deferredPrompt = null;
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      statusEl.textContent = 'App instalado com sucesso! 🎉';
+    });
+
+    if (isStandalone) {
+      statusEl.textContent = 'Rodando em modo app (standalone) 🚀';
+    }
+  </script>
+
+</body>
+</html>
