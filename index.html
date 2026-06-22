@@ -30,6 +30,7 @@
       justify-content: center;
       min-height: 100vh;
       padding: 24px;
+      gap: 14px;
       background: linear-gradient(160deg, #1F3D2E, #142B1E);
     }
     .card {
@@ -69,6 +70,7 @@
 
     .btn-secundario {
       width: 100%;
+      max-width: 360px;
       background: rgba(255,255,255,0.12);
       color: white;
       border: 1px solid rgba(255,255,255,0.3);
@@ -77,7 +79,6 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 12px;
       display: block;
       text-decoration: none;
       box-sizing: border-box;
@@ -371,6 +372,8 @@
   </div>
 
   <div id="tela-login">
+    <button id="btnInstalar" class="btn-secundario" style="display:none;">📲 Instalar App</button>
+
     <div class="card">
       <img class="logo" src="/icons/icon-192.png" alt="Logo">
       <h1>Salada no Pote</h1>
@@ -379,12 +382,10 @@
       <input type="email" id="email" placeholder="seuemail@exemplo.com" autocomplete="email">
       <button id="btnEntrar">Entrar</button>
 
-
       <div id="msg-login"></div>
-
-      <button id="btnInstalar" class="btn-secundario" style="display:none;">📲 Instalar App</button>
-      <a href="mailto:lanovdigital@gmail.com?subject=App%20Salades%20en%20Bocal%20%3A%20Support" class="btn-secundario btn-link">✉️ Suporte</a>
     </div>
+
+    <a href="mailto:lanovdigital@gmail.com?subject=App%20Salades%20en%20Bocal%20%3A%20Support" class="btn-secundario btn-link">✉️ Suporte</a>
   </div>
 
   <div id="tela-app">
