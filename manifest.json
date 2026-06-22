@@ -1,6 +1,7 @@
 {
-  "name": "Salada no Pote",
-  "short_name": "Salada no Pote",
+  "name": "Salades en Bocal",
+  "short_name": "Salades en Bocal",
+  "lang": "fr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

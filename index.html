@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Salada no Pote</title>
+  <title>Salades en Bocal</title>
 
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#1F3D2E">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Salada no Pote">
+  <meta name="apple-mobile-web-app-title" content="Salades en Bocal">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -408,29 +408,29 @@
 
   <div id="modal-ios">
     <div id="modal-ios-conteudo">
-      <h3>Como instalar o app</h3>
+      <h3>Comment installer l'app</h3>
       <div id="modal-ios-imagem-wrap">
         <img src="/tutorial-instalar-ios.gif" alt="Tutorial de instalação no iOS">
       </div>
-      <button id="btnFecharModalIOS">Entendi</button>
+      <button id="btnFecharModalIOS">Compris</button>
     </div>
   </div>
 
   <div id="tela-login">
-    <button id="btnInstalar" class="btn-secundario" style="display:none;">📲 Instalar App</button>
+    <button id="btnInstalar" class="btn-secundario" style="display:none;">📲 Installer l'app</button>
 
     <div class="card">
       <img class="logo" src="/icons/icon-192.png" alt="Logo">
-      <h1>Salada no Pote</h1>
-      <p>Digite o mesmo e-mail usado na sua compra para liberar o acesso.</p>
+      <h1>Salades en Bocal</h1>
+      <p>Entrez le même e-mail utilisé lors de votre achat pour débloquer l'accès.</p>
 
-      <input type="email" id="email" placeholder="seuemail@exemplo.com" autocomplete="email">
-      <button id="btnEntrar">Entrar</button>
+      <input type="email" id="email" placeholder="votreemail@exemple.com" autocomplete="email">
+      <button id="btnEntrar">Entrer</button>
 
       <div id="msg-login"></div>
     </div>
 
-    <a href="mailto:lanovdigital@gmail.com?subject=App%20Salades%20en%20Bocal%20%3A%20Support" class="btn-secundario btn-link">✉️ Suporte</a>
+    <a href="mailto:lanovdigital@gmail.com?subject=App%20Salades%20en%20Bocal%20%3A%20Support" class="btn-secundario btn-link">✉️ Support</a>
   </div>
 
   <div id="tela-app">
@@ -448,7 +448,7 @@
           </button>
         </div>
       </div>
-      <div class="boas-vindas" id="boasVindas">Bem-vindo(a)!</div>
+      <div class="boas-vindas" id="boasVindas">Bienvenue !</div>
     </div>
 
     <div class="conteudo" id="conteudoInicio">
@@ -462,10 +462,10 @@
           <polyline points="22,6 12,13 2,6"></polyline>
         </svg>
       </div>
-      <h2>Precisa de ajuda?</h2>
-      <p>Mande sua dúvida, problema com acesso, ou qualquer outra coisa por e-mail. Respondemos o mais rápido possível.</p>
+      <h2>Besoin d'aide ?</h2>
+      <p>Envoyez-nous votre question, un problème d'accès, ou toute autre demande par e-mail. Nous répondons le plus rapidement possible.</p>
       <a class="btn-suporte" href="mailto:lanovdigital@gmail.com?subject=App%20Salades%20en%20Bocal%20%3A%20Support">
-        ✉️ Enviar e-mail de suporte
+        ✉️ Envoyer un e-mail
       </a>
     </div>
 
@@ -475,7 +475,7 @@
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
           <polyline points="9,22 9,12 15,12 15,22"></polyline>
         </svg>
-        Início
+        Accueil
       </button>
       <button class="rodape-item" id="navSuporte">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -483,7 +483,7 @@
           <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
           <line x1="12" y1="17" x2="12" y2="17"></line>
         </svg>
-        Suporte
+        Support
       </button>
     </div>
   </div>
@@ -496,7 +496,7 @@
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
       </button>
-      <div id="visualizador-titulo">Produto</div>
+      <div id="visualizador-titulo">Produit</div>
     </div>
     <div id="visualizador-conteudo">
       <iframe id="visualizador-iframe" src=""></iframe>
@@ -550,13 +550,13 @@
         .eq('email', emailLimpo);
 
       if (error) {
-        msgLogin.textContent = 'Erro ao verificar acesso. Tente novamente.';
+        msgLogin.textContent = "Erreur lors de la vérification. Veuillez réessayer.";
         btnEntrar.disabled = false;
         return;
       }
 
       if (!acessos || acessos.length === 0) {
-        msgLogin.textContent = 'E-mail não encontrado ou sem produtos liberados.';
+        msgLogin.textContent = "E-mail introuvable ou aucun produit débloqué.";
         btnEntrar.disabled = false;
         return;
       }
@@ -585,7 +585,7 @@
 
     async function renderizarPDF(url) {
       const container = document.getElementById('visualizador-pdf-canvas');
-      container.innerHTML = '<div style="color:white;padding:40px 20px;">Carregando...</div>';
+      container.innerHTML = '<div style="color:white;padding:40px 20px;">Chargement...</div>';
 
       if (pdfObserverAtual) {
         pdfObserverAtual.disconnect();
@@ -656,7 +656,7 @@
         placeholders.forEach((div) => pdfObserverAtual.observe(div));
 
       } catch (err) {
-        container.innerHTML = '<div style="color:white;padding:40px 20px;">Não foi possível carregar o PDF.</div>';
+        container.innerHTML = '<div style="color:white;padding:40px 20px;">Impossible de charger le PDF.</div>';
         console.error('Erro ao renderizar PDF:', err);
       }
     }
@@ -705,7 +705,7 @@
       const inicial = primeiroNome ? primeiroNome[0].toUpperCase() : '?';
 
       avatarEl.textContent = inicial;
-      boasVindasEl.textContent = primeiroNome ? `Bem-vindo(a), ${primeiroNome}!` : 'Bem-vindo(a)!';
+      boasVindasEl.textContent = primeiroNome ? `Bienvenue, ${primeiroNome} !` : 'Bienvenue !';
 
       listaEl.innerHTML = produtos.map((produto, index) => {
         const nome = produto?.nome || 'Produto';
@@ -720,7 +720,7 @@
             <img class="produto-capa" src="${capa}" alt="${nome}">
             <div class="produto-info">
               <h3>${nome}</h3>
-              <button class="btn-acessar" onclick="abrirConteudo(produtoNome${index}, produtoUrl${index})">Acessar</button>
+              <button class="btn-acessar" onclick="abrirConteudo(produtoNome${index}, produtoUrl${index})">Accéder</button>
             </div>
           </div>
         `;
@@ -730,11 +730,11 @@
     btnEntrar.addEventListener('click', () => {
       const email = emailInput.value.trim();
       if (!email || !email.includes('@')) {
-        msgLogin.textContent = 'Digite um e-mail válido.';
+        msgLogin.textContent = 'Veuillez saisir un e-mail valide.';
         return;
       }
       btnEntrar.disabled = true;
-      msgLogin.textContent = 'Verificando...';
+      msgLogin.textContent = 'Vérification...';
       buscarProdutos(email);
     });
 
