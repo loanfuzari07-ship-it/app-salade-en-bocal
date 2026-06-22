@@ -92,7 +92,7 @@
     .cabecalho {
       background: #1F3D2E;
       color: white;
-      padding: max(20px, env(safe-area-inset-top)) 20px 28px;
+      padding: calc(env(safe-area-inset-top) + 16px) 20px 28px;
       border-radius: 0 0 24px 24px;
     }
     .cabecalho-topo {
@@ -206,7 +206,7 @@
     #visualizador-topo {
       background: #1F3D2E;
       color: white;
-      padding: max(14px, env(safe-area-inset-top)) 16px 14px;
+      padding: calc(env(safe-area-inset-top) + 14px) 16px 14px;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -334,22 +334,31 @@
       border-radius: 20px;
       max-width: 360px;
       width: 100%;
+      max-height: 85vh;
       overflow: hidden;
       text-align: center;
+      display: flex;
+      flex-direction: column;
     }
     #modal-ios-conteudo h3 {
       color: #142B1E;
       font-size: 17px;
-      padding: 18px 16px 0;
+      padding: 16px 16px 0;
+      flex-shrink: 0;
+    }
+    #modal-ios-imagem-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      margin-top: 10px;
     }
     #modal-ios-conteudo img {
       width: 100%;
       display: block;
-      margin-top: 12px;
     }
     #btnFecharModalIOS {
       width: calc(100% - 32px);
-      margin: 16px;
+      margin: 14px 16px;
       background: #1F3D2E;
       color: white;
       border: none;
@@ -358,6 +367,7 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      flex-shrink: 0;
     }
   </style>
 </head>
@@ -366,7 +376,9 @@
   <div id="modal-ios">
     <div id="modal-ios-conteudo">
       <h3>Como instalar o app</h3>
-      <img src="/tutorial-instalar-ios.gif" alt="Tutorial de instalação no iOS">
+      <div id="modal-ios-imagem-wrap">
+        <img src="/tutorial-instalar-ios.gif" alt="Tutorial de instalação no iOS">
+      </div>
       <button id="btnFecharModalIOS">Entendi</button>
     </div>
   </div>
@@ -533,7 +545,16 @@
 
     function abrirConteudo(nome, url) {
       document.getElementById('visualizador-titulo').textContent = nome;
-      document.getElementById('visualizador-iframe').src = url;
+
+      let urlFinal = url;
+      const isPdfLocal = url.toLowerCase().endsWith('.pdf') && !url.includes('drive.google.com');
+
+      if (isPdfLocal) {
+        const urlAbsoluta = window.location.origin + url;
+        urlFinal = 'https://mozilla.github.io/pdf.js/web/viewer.html?file=' + encodeURIComponent(urlAbsoluta);
+      }
+
+      document.getElementById('visualizador-iframe').src = urlFinal;
       document.getElementById('visualizador').style.display = 'flex';
 
       const overlay = document.getElementById('overlay-bloqueio');
@@ -610,44 +631,45 @@
       navigator.serviceWorker.register('/sw.js');
     }
 
-    // Modal de tutorial de instalação para iOS (só na primeira visita)
-    (function () {
-      const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      const jaViu = localStorage.getItem('viu_tutorial_ios');
-
-      if (isIOS && !isStandalone && !jaViu) {
-        document.getElementById('modal-ios').style.display = 'flex';
-      }
-
-      document.getElementById('btnFecharModalIOS').addEventListener('click', () => {
-        document.getElementById('modal-ios').style.display = 'none';
-        localStorage.setItem('viu_tutorial_ios', 'true');
-      });
-    })();
-
-    // Lógica do botão "Instalar App"
-    let deferredPrompt;
+    // Lógica de instalação do app (diferente por plataforma)
+    const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     const btnInstalar = document.getElementById('btnInstalar');
+    const modalIOS = document.getElementById('modal-ios');
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
+    document.getElementById('btnFecharModalIOS').addEventListener('click', () => {
+      modalIOS.style.display = 'none';
+    });
+
+    if (isIOS && !isStandalone) {
+      // No iOS: botão sempre visível, clicar abre o tutorial em GIF
       btnInstalar.style.display = 'block';
-    });
+      btnInstalar.addEventListener('click', () => {
+        modalIOS.style.display = 'flex';
+      });
+    } else if (!isStandalone) {
+      // Em outras plataformas (Android/Chrome): usa o prompt nativo de instalação
+      let deferredPrompt;
 
-    btnInstalar.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        btnInstalar.style.display = 'block';
+      });
+
+      btnInstalar.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          btnInstalar.style.display = 'none';
+        }
+      });
+
+      window.addEventListener('appinstalled', () => {
         btnInstalar.style.display = 'none';
-      }
-    });
-
-    window.addEventListener('appinstalled', () => {
-      btnInstalar.style.display = 'none';
-    });
+      });
+    }
   </script>
 
 </body>
