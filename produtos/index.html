@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Salada no Pote</title>
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1F3D2E">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Salada no Pote">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #F5F0E6;
+      color: #142B1E;
+      min-height: 100vh;
+    }
+
+    #tela-login {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      gap: 14px;
+      background: linear-gradient(160deg, #1F3D2E, #142B1E);
+    }
+    .card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 32px 24px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      color: white;
+    }
+    img.logo { width: 72px; height: 72px; border-radius: 16px; margin-bottom: 16px; }
+    h1 { font-size: 22px; margin-bottom: 8px; }
+    .card p { opacity: 0.9; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      background: #F5F0E6;
+      color: #142B1E;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: default; }
+    #msg-login { margin-top: 16px; font-size: 13px; opacity: 0.95; min-height: 18px; }
+
+    .btn-secundario {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    #tela-app {
+      display: none;
+      min-height: 100vh;
+    }
+    .cabecalho {
+      background: #1F3D2E;
+      color: white;
+      padding: calc(env(safe-area-inset-top) + 16px) 20px 28px;
+      border-radius: 0 0 24px 24px;
+    }
+    .cabecalho-topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .logo-topo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+    }
+    .lado-direito {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #F5F0E6;
+      color: #1F3D2E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    #btnSair {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    #btnSair svg {
+      width: 18px;
+      height: 18px;
+    }
+    .boas-vindas {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .conteudo {
+      padding: 20px;
+    }
+    .grid-produtos {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .produto-card {
+      background: white;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(31,61,46,0.12);
+      border: 1px solid #e3e9de;
+      display: flex;
+      flex-direction: column;
+    }
+    .produto-capa {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      background: #e4e9df;
+      display: block;
+    }
+    .produto-info {
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .produto-info h3 {
+      font-size: 16px;
+      color: #142B1E;
+      line-height: 1.35;
+      font-weight: 700;
+    }
+    .btn-acessar {
+      background: #1F3D2E;
+      color: white;
+      border: none;
+      padding: 11px 0;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+    .vazio { text-align: center; padding: 60px 20px; opacity: 0.6; line-height: 1.6; }
+
+    /* Visualizador de conteúdo em tela cheia */
+    #visualizador {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 999;
+      flex-direction: column;
+    }
+    #visualizador-topo {
+      background: #1F3D2E;
+      color: white;
+      padding: calc(env(safe-area-inset-top) + 14px) 16px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    #btnFecharVisualizador {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    #visualizador-titulo {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    #visualizador-conteudo {
+      position: relative;
+      flex: 1;
+    }
+    #visualizador iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+    #overlay-bloqueio {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 56px;
+      height: 56px;
+      background: #f1f1f1;
+      z-index: 10;
+    }
+
+    .conteudo { padding-bottom: 90px; }
+
+    .rodape {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+      padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+    }
+    .rodape-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9fb09f;
+      font-size: 12px;
+    }
+    .rodape-item.ativo { color: #1F3D2E; font-weight: 600; }
+    .rodape-item svg { width: 22px; height: 22px; }
+
+    .tela-suporte {
+      display: none;
+      padding: 24px 20px;
+      text-align: center;
+    }
+    .tela-suporte h2 {
+      color: #142B1E;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .tela-suporte p {
+      color: #5a6e5a;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .btn-suporte {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1F3D2E;
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      width: auto;
+    }
+    .icone-suporte {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #eef3ea;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .icone-suporte svg { width: 30px; height: 30px; color: #1F3D2E; }
+
+    #modal-ios {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #modal-ios-conteudo {
+      background: white;
+      border-radius: 20px;
+      max-width: 360px;
+      width: 100%;
+      max-height: 85vh;
+      overflow: hidden;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+    }
+    #modal-ios-conteudo h3 {
+      color: #142B1E;
+      font-size: 17px;
+      padding: 16px 16px 0;
+      flex-shrink: 0;
+    }
+    #modal-ios-imagem-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    #modal-ios-conteudo img {
+      width: 100%;
+      display: block;
+    }
+    #btnFecharModalIOS {
+      width: calc(100% - 32px);
+      margin: 14px 16px;
+      background: #1F3D2E;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="modal-ios">
+    <div id="modal-ios-conteudo">
+      <h3>Como instalar o app</h3>
+      <div id="modal-ios-imagem-wrap">
+        <img src="/tutorial-instalar-ios.gif" alt="Tutorial de instalação no iOS">
+      </div>
+      <button id="btnFecharModalIOS">Entendi</button>
+    </div>
+  </div>
+
+  <div id="tela-login">
+    <button id="btnInstalar" class="btn-secundario" style="display:none;">📲 Instalar App</button>
+
+    <div class="card">
+      <img class="logo" src="/icons/icon-192.png" alt="Logo">
+      <h1>Salada no Pote</h1>
+      <p>Digite o mesmo e-mail usado na sua compra para liberar o acesso.</p>
+
+      <input type="email" id="email" placeholder="seuemail@exemplo.com" autocomplete="email">
+      <button id="btnEntrar">Entrar</button>
+
+      <div id="msg-login"></div>
+    </div>
+
+    <a href="mailto:lanovdigital@gmail.com?subject=App%20Salades%20en%20Bocal%20%3A%20Support" class="btn-secundario btn-link">✉️ Suporte</a>
+  </div>
+
+  <div id="tela-app">
+    <div class="cabecalho">
+      <div class="cabecalho-topo">
+        <img class="logo-topo" src="/icons/icon-192.png" alt="Logo">
+        <div class="lado-direito">
+          <div class="avatar" id="avatar">?</div>
+          <button id="btnSair" title="Sair">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="boas-vindas" id="boasVindas">Bem-vindo(a)!</div>
+    </div>
+
+    <div class="conteudo" id="conteudoInicio">
+      <div class="grid-produtos" id="lista"></div>
+    </div>
+
+    <div class="conteudo tela-suporte" id="conteudoSuporte">
+      <div class="icone-suporte">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+      </div>
+      <h2>Precisa de ajuda?</h2>
+      <p>Mande sua dúvida, problema com acesso, ou qualquer outra coisa por e-mail. Respondemos o mais rápido possível.</p>
+      <a class="btn-suporte" href="mailto:lanovdigital@gmail.com?subject=App%20Salades%20en%20Bocal%20%3A%20Support">
+        ✉️ Enviar e-mail de suporte
+      </a>
+    </div>
+
+    <div class="rodape">
+      <button class="rodape-item ativo" id="navInicio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9,22 9,12 15,12 15,22"></polyline>
+        </svg>
+        Início
+      </button>
+      <button class="rodape-item" id="navSuporte">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+          <line x1="12" y1="17" x2="12" y2="17"></line>
+        </svg>
+        Suporte
+      </button>
+    </div>
+  </div>
+
+  <div id="visualizador">
+    <div id="visualizador-topo">
+      <button id="btnFecharVisualizador">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+      <div id="visualizador-titulo">Produto</div>
+    </div>
+    <div id="visualizador-conteudo">
+      <iframe id="visualizador-iframe" src=""></iframe>
+      <div id="overlay-bloqueio"></div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://qjfdlyuctqsepqckhszr.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_3r3aBUHsJ_quZNkMMZ1Rlg_VdsmUp0Z';
+
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const telaLogin = document.getElementById('tela-login');
+    const telaApp = document.getElementById('tela-app');
+    const emailInput = document.getElementById('email');
+    const btnEntrar = document.getElementById('btnEntrar');
+    const msgLogin = document.getElementById('msg-login');
+    const listaEl = document.getElementById('lista');
+    const btnSair = document.getElementById('btnSair');
+    const avatarEl = document.getElementById('avatar');
+    const boasVindasEl = document.getElementById('boasVindas');
+    const navInicio = document.getElementById('navInicio');
+    const navSuporte = document.getElementById('navSuporte');
+    const conteudoInicio = document.getElementById('conteudoInicio');
+    const conteudoSuporte = document.getElementById('conteudoSuporte');
+
+    navInicio.addEventListener('click', () => {
+      conteudoInicio.style.display = 'block';
+      conteudoSuporte.style.display = 'none';
+      navInicio.classList.add('ativo');
+      navSuporte.classList.remove('ativo');
+    });
+
+    navSuporte.addEventListener('click', () => {
+      conteudoInicio.style.display = 'none';
+      conteudoSuporte.style.display = 'block';
+      navSuporte.classList.add('ativo');
+      navInicio.classList.remove('ativo');
+    });
+
+    async function buscarProdutos(email) {
+      const emailLimpo = email.toLowerCase().trim();
+
+      // Verifica se o e-mail tem pelo menos 1 acesso (produto principal comprado)
+      const { data: acessos, error } = await sb
+        .from('acessos')
+        .select('produto_id, nome, produtos ( nome, conteudo_url, imagem_url, tipo )')
+        .eq('email', emailLimpo);
+
+      if (error) {
+        msgLogin.textContent = 'Erro ao verificar acesso. Tente novamente.';
+        btnEntrar.disabled = false;
+        return;
+      }
+
+      if (!acessos || acessos.length === 0) {
+        msgLogin.textContent = 'E-mail não encontrado ou sem produtos liberados.';
+        btnEntrar.disabled = false;
+        return;
+      }
+
+      // Busca todos os produtos marcados como bônus (liberados pra qualquer cliente)
+      const { data: bonus, error: erroBonus } = await sb
+        .from('produtos')
+        .select('id, nome, conteudo_url, imagem_url, tipo')
+        .eq('tipo', 'bonus');
+
+      const produtosPrincipais = acessos.map(a => a.produtos);
+      const produtosBonus = bonus || [];
+      const todosProdutos = [...produtosPrincipais, ...produtosBonus];
+
+      localStorage.setItem('meuapp_email', emailLimpo);
+
+      const nomePessoa = acessos[0]?.nome || '';
+      mostrarApp(todosProdutos, nomePessoa);
+    }
+
+    function abrirConteudo(nome, url) {
+      document.getElementById('visualizador-titulo').textContent = nome;
+
+      let urlFinal = url;
+      const isPdfLocal = url.toLowerCase().endsWith('.pdf') && !url.includes('drive.google.com');
+
+      if (isPdfLocal) {
+        const urlAbsoluta = window.location.origin + url;
+        urlFinal = 'https://mozilla.github.io/pdf.js/web/viewer.html?file=' + encodeURIComponent(urlAbsoluta);
+      }
+
+      document.getElementById('visualizador-iframe').src = urlFinal;
+      document.getElementById('visualizador').style.display = 'flex';
+
+      const overlay = document.getElementById('overlay-bloqueio');
+      overlay.style.display = url.includes('drive.google.com') ? 'block' : 'none';
+    }
+
+    document.getElementById('btnFecharVisualizador').addEventListener('click', () => {
+      document.getElementById('visualizador').style.display = 'none';
+      document.getElementById('visualizador-iframe').src = '';
+    });
+
+    function mostrarApp(produtos, nomePessoa) {
+      telaLogin.style.display = 'none';
+      telaApp.style.display = 'block';
+
+      const primeiroNome = nomePessoa ? nomePessoa.trim().split(' ')[0] : '';
+      const inicial = primeiroNome ? primeiroNome[0].toUpperCase() : '?';
+
+      avatarEl.textContent = inicial;
+      boasVindasEl.textContent = primeiroNome ? `Bem-vindo(a), ${primeiroNome}!` : 'Bem-vindo(a)!';
+
+      listaEl.innerHTML = produtos.map((produto, index) => {
+        const nome = produto?.nome || 'Produto';
+        const url = produto?.conteudo_url || '#';
+        const capa = produto?.imagem_url || '/icons/icon-512.png';
+
+        window['produtoUrl' + index] = url;
+        window['produtoNome' + index] = nome;
+
+        return `
+          <div class="produto-card">
+            <img class="produto-capa" src="${capa}" alt="${nome}">
+            <div class="produto-info">
+              <h3>${nome}</h3>
+              <button class="btn-acessar" onclick="abrirConteudo(produtoNome${index}, produtoUrl${index})">Acessar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    btnEntrar.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        msgLogin.textContent = 'Digite um e-mail válido.';
+        return;
+      }
+      btnEntrar.disabled = true;
+      msgLogin.textContent = 'Verificando...';
+      buscarProdutos(email);
+    });
+
+    emailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') btnEntrar.click();
+    });
+
+    btnSair.addEventListener('click', () => {
+      localStorage.removeItem('meuapp_email');
+      telaApp.style.display = 'none';
+      telaLogin.style.display = 'flex';
+      emailInput.value = '';
+      msgLogin.textContent = '';
+      btnEntrar.disabled = false;
+    });
+
+    window.addEventListener('load', () => {
+      const emailSalvo = localStorage.getItem('meuapp_email');
+      if (emailSalvo) {
+        buscarProdutos(emailSalvo);
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+
+    // Lógica de instalação do app (diferente por plataforma)
+    const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const btnInstalar = document.getElementById('btnInstalar');
+    const modalIOS = document.getElementById('modal-ios');
+
+    document.getElementById('btnFecharModalIOS').addEventListener('click', () => {
+      modalIOS.style.display = 'none';
+    });
+
+    if (isIOS && !isStandalone) {
+      // No iOS: botão sempre visível, clicar abre o tutorial em GIF
+      btnInstalar.style.display = 'block';
+      btnInstalar.addEventListener('click', () => {
+        modalIOS.style.display = 'flex';
+      });
+    } else if (!isStandalone) {
+      // Em outras plataformas (Android/Chrome): usa o prompt nativo de instalação
+      let deferredPrompt;
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        btnInstalar.style.display = 'block';
+      });
+
+      btnInstalar.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          btnInstalar.style.display = 'none';
+        }
+      });
+
+      window.addEventListener('appinstalled', () => {
+        btnInstalar.style.display = 'none';
+      });
+    }
+  </script>
+
+</body>
+</html>
