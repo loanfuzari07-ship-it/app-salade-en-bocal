@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Meu App</title>
+  <title>Salada no Pote</title>
 
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#6C5CE7">
+  <meta name="theme-color" content="#4F7942">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="TestApp">
+  <meta name="apple-mobile-web-app-title" content="Salada no Pote">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -18,8 +18,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #1a1a2e;
-      color: white;
+      background: #F5F0E6;
+      color: #2E4A2E;
       min-height: 100vh;
     }
 
@@ -30,19 +30,20 @@
       justify-content: center;
       min-height: 100vh;
       padding: 24px;
-      background: linear-gradient(160deg, #6C5CE7, #341f97);
+      background: linear-gradient(160deg, #4F7942, #2E4A2E);
     }
     .card {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.1);
       border-radius: 20px;
       padding: 32px 24px;
       max-width: 360px;
       width: 100%;
       text-align: center;
+      color: white;
     }
     img.logo { width: 72px; height: 72px; border-radius: 16px; margin-bottom: 16px; }
     h1 { font-size: 22px; margin-bottom: 8px; }
-    .card p { opacity: 0.85; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+    .card p { opacity: 0.9; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
     input {
       width: 100%;
       padding: 14px 16px;
@@ -54,8 +55,8 @@
     }
     button {
       width: 100%;
-      background: white;
-      color: #341f97;
+      background: #F5F0E6;
+      color: #2E4A2E;
       border: none;
       padding: 14px;
       border-radius: 12px;
@@ -64,30 +65,56 @@
       cursor: pointer;
     }
     button:disabled { opacity: 0.6; cursor: default; }
-    #msg-login { margin-top: 16px; font-size: 13px; opacity: 0.9; min-height: 18px; }
+    #msg-login { margin-top: 16px; font-size: 13px; opacity: 0.95; min-height: 18px; }
 
     #tela-app {
       display: none;
-      padding: 24px 20px 60px;
+      min-height: 100vh;
     }
-    header {
+    .cabecalho {
+      background: #4F7942;
+      color: white;
+      padding: 20px 20px 28px;
+      border-radius: 0 0 24px 24px;
+    }
+    .cabecalho-topo {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
-    header h1 { font-size: 18px; }
-    #logout {
-      background: rgba(255,255,255,0.1);
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #F5F0E6;
+      color: #2E4A2E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    #btnSair {
+      background: rgba(255,255,255,0.15);
       border: none;
       color: white;
       padding: 8px 14px;
       border-radius: 8px;
       font-size: 13px;
       cursor: pointer;
+      width: auto;
+    }
+    .boas-vindas {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .conteudo {
+      padding: 20px;
     }
     .produto-card {
-      background: rgba(255,255,255,0.06);
+      background: white;
       border-radius: 16px;
       padding: 18px;
       margin-bottom: 14px;
@@ -95,11 +122,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .produto-info h3 { font-size: 16px; margin-bottom: 4px; }
-    .produto-info p { font-size: 13px; opacity: 0.6; }
+    .produto-info h3 { font-size: 16px; margin-bottom: 4px; color: #2E4A2E; }
+    .produto-info p { font-size: 13px; color: #6b8e6b; }
     .btn-acessar {
-      background: #6C5CE7;
+      background: #4F7942;
       color: white;
       border: none;
       padding: 10px 18px;
@@ -108,6 +136,7 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
+      width: auto;
     }
     .vazio { text-align: center; padding: 60px 20px; opacity: 0.6; line-height: 1.6; }
   </style>
@@ -117,7 +146,7 @@
   <div id="tela-login">
     <div class="card">
       <img class="logo" src="/icons/icon-192.png" alt="Logo">
-      <h1>Acessar meu app</h1>
+      <h1>Salada no Pote</h1>
       <p>Digite o mesmo e-mail usado na sua compra para liberar o acesso.</p>
 
       <input type="email" id="email" placeholder="seuemail@exemplo.com" autocomplete="email">
@@ -128,11 +157,16 @@
   </div>
 
   <div id="tela-app">
-    <header>
-      <h1>Meus produtos</h1>
-      <button id="logout">Sair</button>
-    </header>
-    <div id="lista"></div>
+    <div class="cabecalho">
+      <div class="cabecalho-topo">
+        <div class="avatar" id="avatar">?</div>
+        <button id="btnSair">Sair</button>
+      </div>
+      <div class="boas-vindas" id="boasVindas">Bem-vindo(a)!</div>
+    </div>
+    <div class="conteudo">
+      <div id="lista"></div>
+    </div>
   </div>
 
   <script>
@@ -148,13 +182,17 @@
     const btnEntrar = document.getElementById('btnEntrar');
     const msgLogin = document.getElementById('msg-login');
     const listaEl = document.getElementById('lista');
-    const logoutBtn = document.getElementById('logout');
+    const btnSair = document.getElementById('btnSair');
+    const avatarEl = document.getElementById('avatar');
+    const boasVindasEl = document.getElementById('boasVindas');
 
     async function buscarProdutos(email) {
+      const emailLimpo = email.toLowerCase().trim();
+
       const { data: acessos, error } = await sb
         .from('acessos')
-        .select('produto_id, produtos ( nome, conteudo_url )')
-        .eq('email', email.toLowerCase().trim());
+        .select('produto_id, nome, produtos ( nome, conteudo_url )')
+        .eq('email', emailLimpo);
 
       if (error) {
         msgLogin.textContent = 'Erro ao verificar acesso. Tente novamente.';
@@ -168,13 +206,21 @@
         return;
       }
 
-      localStorage.setItem('meuapp_email', email.toLowerCase().trim());
-      mostrarProdutos(acessos);
+      localStorage.setItem('meuapp_email', emailLimpo);
+
+      const nomePessoa = acessos[0]?.nome || '';
+      mostrarApp(acessos, nomePessoa);
     }
 
-    function mostrarProdutos(acessos) {
+    function mostrarApp(acessos, nomePessoa) {
       telaLogin.style.display = 'none';
       telaApp.style.display = 'block';
+
+      const primeiroNome = nomePessoa ? nomePessoa.trim().split(' ')[0] : '';
+      const inicial = primeiroNome ? primeiroNome[0].toUpperCase() : '?';
+
+      avatarEl.textContent = inicial;
+      boasVindasEl.textContent = primeiroNome ? `Bem-vindo(a), ${primeiroNome}!` : 'Bem-vindo(a)!';
 
       listaEl.innerHTML = acessos.map(acesso => {
         const produto = acesso.produtos;
@@ -183,7 +229,7 @@
           <div class="produto-card">
             <div class="produto-info">
               <h3>${produto?.nome || 'Produto'}</h3>
-              <p>Acesso liberado</p>
+              <p>Acesso liberado ✅</p>
             </div>
             <button class="btn-acessar" onclick="window.location.href='${url}'">Acessar</button>
           </div>
@@ -206,7 +252,7 @@
       if (e.key === 'Enter') btnEntrar.click();
     });
 
-    logoutBtn.addEventListener('click', () => {
+    btnSair.addEventListener('click', () => {
       localStorage.removeItem('meuapp_email');
       telaApp.style.display = 'none';
       telaLogin.style.display = 'flex';
