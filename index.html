@@ -3,131 +3,227 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Meu App de Teste</title>
+  <title>Meu App</title>
 
-  <!-- PWA padrão (Android / Chrome) -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#6C5CE7">
-
-  <!-- iOS específico -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TestApp">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(160deg, #6C5CE7, #341f97);
+      background: #1a1a2e;
       color: white;
       min-height: 100vh;
+    }
+
+    #tela-login {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
+      min-height: 100vh;
       padding: 24px;
+      background: linear-gradient(160deg, #6C5CE7, #341f97);
     }
-    img.logo {
-      width: 96px;
-      height: 96px;
+    .card {
+      background: rgba(255,255,255,0.08);
       border-radius: 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      padding: 32px 24px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
     }
-    h1 { font-size: 24px; margin-bottom: 8px; }
-    p { opacity: 0.85; margin-bottom: 32px; max-width: 320px; }
-
-    #btnInstalar {
+    img.logo { width: 72px; height: 72px; border-radius: 16px; margin-bottom: 16px; }
+    h1 { font-size: 22px; margin-bottom: 8px; }
+    .card p { opacity: 0.85; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    button {
+      width: 100%;
       background: white;
       color: #341f97;
       border: none;
-      padding: 14px 28px;
+      padding: 14px;
       border-radius: 12px;
       font-size: 16px;
       font-weight: 600;
-      display: none;
       cursor: pointer;
     }
+    button:disabled { opacity: 0.6; cursor: default; }
+    #msg-login { margin-top: 16px; font-size: 13px; opacity: 0.9; min-height: 18px; }
 
-    #iosInstrucao {
+    #tela-app {
       display: none;
-      background: rgba(255,255,255,0.12);
-      border-radius: 12px;
-      padding: 16px 20px;
-      font-size: 14px;
-      max-width: 320px;
-      line-height: 1.5;
+      padding: 24px 20px 60px;
     }
-
-    #status {
-      margin-top: 24px;
-      font-size: 12px;
-      opacity: 0.6;
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
     }
+    header h1 { font-size: 18px; }
+    #logout {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .produto-card {
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .produto-info h3 { font-size: 16px; margin-bottom: 4px; }
+    .produto-info p { font-size: 13px; opacity: 0.6; }
+    .btn-acessar {
+      background: #6C5CE7;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .vazio { text-align: center; padding: 60px 20px; opacity: 0.6; line-height: 1.6; }
   </style>
 </head>
 <body>
 
-  <img class="logo" src="/icons/icon-192.png" alt="Logo">
-  <h1>Meu App de Teste</h1>
-  <p>Esta página é um PWA. Teste a instalação no seu celular.</p>
+  <div id="tela-login">
+    <div class="card">
+      <img class="logo" src="/icons/icon-192.png" alt="Logo">
+      <h1>Acessar meu app</h1>
+      <p>Digite o mesmo e-mail usado na sua compra para liberar o acesso.</p>
 
-  <button id="btnInstalar">📲 Instalar App</button>
+      <input type="email" id="email" placeholder="seuemail@exemplo.com" autocomplete="email">
+      <button id="btnEntrar">Entrar</button>
 
-  <div id="iosInstrucao">
-    📱 No iPhone: toque no botão <strong>Compartilhar</strong> (ícone do quadrado com seta) na barra do Safari e depois em <strong>"Adicionar à Tela de Início"</strong>.
+      <div id="msg-login"></div>
+    </div>
   </div>
 
-  <div id="status">Verificando suporte...</div>
+  <div id="tela-app">
+    <header>
+      <h1>Meus produtos</h1>
+      <button id="logout">Sair</button>
+    </header>
+    <div id="lista"></div>
+  </div>
 
   <script>
-    const statusEl = document.getElementById('status');
-    const btnInstalar = document.getElementById('btnInstalar');
-    const iosInstrucao = document.getElementById('iosInstrucao');
+    const SUPABASE_URL = 'https://qjfdlyuctqsepqckhszr.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_3r3aBUHsJ_quZNkMMZ1Rlg_VdsmUp0Z';
 
-    // Registrar o Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(() => statusEl.textContent = 'Service Worker registrado ✅')
-        .catch((err) => statusEl.textContent = 'Erro no Service Worker: ' + err);
-    } else {
-      statusEl.textContent = 'Service Worker não suportado neste navegador';
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const telaLogin = document.getElementById('tela-login');
+    const telaApp = document.getElementById('tela-app');
+    const emailInput = document.getElementById('email');
+    const btnEntrar = document.getElementById('btnEntrar');
+    const msgLogin = document.getElementById('msg-login');
+    const listaEl = document.getElementById('lista');
+    const logoutBtn = document.getElementById('logout');
+
+    async function buscarProdutos(email) {
+      const { data: acessos, error } = await sb
+        .from('acessos')
+        .select('produto_id, produtos ( nome, conteudo_url )')
+        .eq('email', email.toLowerCase().trim());
+
+      if (error) {
+        msgLogin.textContent = 'Erro ao verificar acesso. Tente novamente.';
+        btnEntrar.disabled = false;
+        return;
+      }
+
+      if (!acessos || acessos.length === 0) {
+        msgLogin.textContent = 'E-mail não encontrado ou sem produtos liberados.';
+        btnEntrar.disabled = false;
+        return;
+      }
+
+      localStorage.setItem('meuapp_email', email.toLowerCase().trim());
+      mostrarProdutos(acessos);
     }
 
-    // Detectar iOS
-    const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    function mostrarProdutos(acessos) {
+      telaLogin.style.display = 'none';
+      telaApp.style.display = 'block';
 
-    if (isIOS && !isStandalone) {
-      iosInstrucao.style.display = 'block';
+      listaEl.innerHTML = acessos.map(acesso => {
+        const produto = acesso.produtos;
+        const url = produto?.conteudo_url || '#';
+        return `
+          <div class="produto-card">
+            <div class="produto-info">
+              <h3>${produto?.nome || 'Produto'}</h3>
+              <p>Acesso liberado</p>
+            </div>
+            <button class="btn-acessar" onclick="window.location.href='${url}'">Acessar</button>
+          </div>
+        `;
+      }).join('');
     }
 
-    // Prompt de instalação (Android/Chrome)
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      btnInstalar.style.display = 'inline-block';
+    btnEntrar.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        msgLogin.textContent = 'Digite um e-mail válido.';
+        return;
+      }
+      btnEntrar.disabled = true;
+      msgLogin.textContent = 'Verificando...';
+      buscarProdutos(email);
     });
 
-    btnInstalar.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log('Resultado da instalação:', outcome);
-        btnInstalar.style.display = 'none';
-        deferredPrompt = null;
+    emailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') btnEntrar.click();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('meuapp_email');
+      telaApp.style.display = 'none';
+      telaLogin.style.display = 'flex';
+      emailInput.value = '';
+      msgLogin.textContent = '';
+      btnEntrar.disabled = false;
+    });
+
+    window.addEventListener('load', () => {
+      const emailSalvo = localStorage.getItem('meuapp_email');
+      if (emailSalvo) {
+        buscarProdutos(emailSalvo);
       }
     });
 
-    window.addEventListener('appinstalled', () => {
-      statusEl.textContent = 'App instalado com sucesso! 🎉';
-    });
-
-    if (isStandalone) {
-      statusEl.textContent = 'Rodando em modo app (standalone) 🚀';
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
     }
   </script>
 
