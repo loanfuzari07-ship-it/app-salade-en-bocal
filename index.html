@@ -13,6 +13,7 @@
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -224,20 +225,44 @@
       justify-content: center;
       cursor: pointer;
       padding: 0;
+      flex-shrink: 0;
+    }
+    #btnFecharVisualizador svg {
+      width: 18px;
+      height: 18px;
     }
     #visualizador-titulo {
       font-size: 15px;
       font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     #visualizador-conteudo {
       position: relative;
       flex: 1;
+      overflow: hidden;
     }
     #visualizador iframe {
       width: 100%;
       height: 100%;
       border: none;
       display: block;
+    }
+    #visualizador-pdf-canvas {
+      display: none;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      background: #2a2a2a;
+      text-align: center;
+      padding: 12px 0;
+      box-sizing: border-box;
+    }
+    #visualizador-pdf-canvas canvas {
+      max-width: 100%;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
     #overlay-bloqueio {
       position: absolute;
@@ -349,11 +374,18 @@
     #modal-ios-imagem-wrap {
       flex: 1;
       min-height: 0;
-      overflow-y: auto;
       margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
     #modal-ios-conteudo img {
-      width: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
       display: block;
     }
     #btnFecharModalIOS {
@@ -467,6 +499,7 @@
     </div>
     <div id="visualizador-conteudo">
       <iframe id="visualizador-iframe" src=""></iframe>
+      <div id="visualizador-pdf-canvas"></div>
       <div id="overlay-bloqueio"></div>
     </div>
   </div>
@@ -543,27 +576,73 @@
       mostrarApp(todosProdutos, nomePessoa);
     }
 
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    async function renderizarPDF(url) {
+      const container = document.getElementById('visualizador-pdf-canvas');
+      container.innerHTML = '<div style="color:white;padding:40px 20px;">Carregando...</div>';
+
+      try {
+        const pdf = await pdfjsLib.getDocument(url).promise;
+        container.innerHTML = '';
+
+        const larguraDisponivel = container.clientWidth - 20;
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewportBase = page.getViewport({ scale: 1 });
+          const escala = larguraDisponivel / viewportBase.width;
+          const viewport = page.getViewport({ scale: escala * (window.devicePixelRatio || 1) });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.style.width = larguraDisponivel + 'px';
+          canvas.style.height = (larguraDisponivel * viewport.height / viewport.width) + 'px';
+
+          container.appendChild(canvas);
+
+          const ctx = canvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+        }
+      } catch (err) {
+        container.innerHTML = '<div style="color:white;padding:40px 20px;">Não foi possível carregar o PDF.</div>';
+        console.error('Erro ao renderizar PDF:', err);
+      }
+    }
+
     function abrirConteudo(nome, url) {
       document.getElementById('visualizador-titulo').textContent = nome;
 
-      let urlFinal = url;
+      const iframe = document.getElementById('visualizador-iframe');
+      const canvasContainer = document.getElementById('visualizador-pdf-canvas');
+      const overlay = document.getElementById('overlay-bloqueio');
+
       const isPdfLocal = url.toLowerCase().endsWith('.pdf') && !url.includes('drive.google.com');
 
       if (isPdfLocal) {
-        const urlAbsoluta = window.location.origin + url;
-        urlFinal = 'https://mozilla.github.io/pdf.js/web/viewer.html?file=' + encodeURIComponent(urlAbsoluta);
+        iframe.style.display = 'none';
+        iframe.src = '';
+        canvasContainer.style.display = 'block';
+        overlay.style.display = 'none';
+        renderizarPDF(url);
+      } else {
+        canvasContainer.style.display = 'none';
+        canvasContainer.innerHTML = '';
+        iframe.style.display = 'block';
+        iframe.src = url;
+        overlay.style.display = url.includes('drive.google.com') ? 'block' : 'none';
       }
 
-      document.getElementById('visualizador-iframe').src = urlFinal;
       document.getElementById('visualizador').style.display = 'flex';
-
-      const overlay = document.getElementById('overlay-bloqueio');
-      overlay.style.display = url.includes('drive.google.com') ? 'block' : 'none';
     }
 
     document.getElementById('btnFecharVisualizador').addEventListener('click', () => {
       document.getElementById('visualizador').style.display = 'none';
       document.getElementById('visualizador-iframe').src = '';
+      document.getElementById('visualizador-pdf-canvas').innerHTML = '';
     });
 
     function mostrarApp(produtos, nomePessoa) {
