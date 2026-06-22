@@ -70,20 +70,21 @@
     #msg-login { margin-top: 16px; font-size: 13px; opacity: 0.95; min-height: 18px; }
 
     .btn-secundario {
-      width: 100%;
-      max-width: 360px;
-      background: rgba(255,255,255,0.12);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.3);
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 14px;
+      width: auto;
+      max-width: 280px;
+      background: white;
+      color: #1F3D2E;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
       display: block;
       text-decoration: none;
       box-sizing: border-box;
       text-align: center;
+      margin: 0 auto;
     }
 
     #tela-app {
@@ -379,14 +380,14 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      width: 100%;
     }
     #modal-ios-conteudo img {
+      display: block;
       max-width: 100%;
-      max-height: 100%;
+      max-height: 60vh;
       width: auto;
       height: auto;
-      object-fit: contain;
-      display: block;
     }
     #btnFecharModalIOS {
       width: calc(100% - 32px);
@@ -580,33 +581,80 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
+    let pdfObserverAtual = null;
+
     async function renderizarPDF(url) {
       const container = document.getElementById('visualizador-pdf-canvas');
       container.innerHTML = '<div style="color:white;padding:40px 20px;">Carregando...</div>';
+
+      if (pdfObserverAtual) {
+        pdfObserverAtual.disconnect();
+        pdfObserverAtual = null;
+      }
 
       try {
         const pdf = await pdfjsLib.getDocument(url).promise;
         container.innerHTML = '';
 
-        const larguraDisponivel = container.clientWidth - 20;
+        const larguraDisponivel = Math.min(container.clientWidth - 20, 900);
 
+        // Cria um "placeholder" leve para cada página, com a altura correta já calculada
+        const primeiraPagina = await pdf.getPage(1);
+        const viewportBase = primeiraPagina.getViewport({ scale: 1 });
+        const proporcao = viewportBase.height / viewportBase.width;
+        const alturaEstimada = larguraDisponivel * proporcao;
+
+        const placeholders = [];
         for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const viewportBase = page.getViewport({ scale: 1 });
-          const escala = larguraDisponivel / viewportBase.width;
-          const viewport = page.getViewport({ scale: escala * (window.devicePixelRatio || 1) });
+          const div = document.createElement('div');
+          div.className = 'pagina-pdf-placeholder';
+          div.dataset.pagina = i;
+          div.style.width = larguraDisponivel + 'px';
+          div.style.height = alturaEstimada + 'px';
+          div.style.margin = '0 auto 12px';
+          div.style.background = '#3a3a3a';
+          container.appendChild(div);
+          placeholders.push(div);
+        }
+
+        const renderizadas = new Set();
+
+        async function renderizarPagina(div) {
+          const numero = parseInt(div.dataset.pagina, 10);
+          if (renderizadas.has(numero)) return;
+          renderizadas.add(numero);
+
+          const page = await pdf.getPage(numero);
+          const viewportBasePag = page.getViewport({ scale: 1 });
+          const escala = larguraDisponivel / viewportBasePag.width;
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const viewport = page.getViewport({ scale: escala * dpr });
 
           const canvas = document.createElement('canvas');
           canvas.width = viewport.width;
           canvas.height = viewport.height;
           canvas.style.width = larguraDisponivel + 'px';
           canvas.style.height = (larguraDisponivel * viewport.height / viewport.width) + 'px';
-
-          container.appendChild(canvas);
+          canvas.style.display = 'block';
+          canvas.style.margin = '0 auto 12px';
+          canvas.style.boxShadow = '0 2px 10px rgba(0,0,0,0.4)';
 
           const ctx = canvas.getContext('2d');
           await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+          div.replaceWith(canvas);
         }
+
+        pdfObserverAtual = new IntersectionObserver((entradas) => {
+          entradas.forEach((entrada) => {
+            if (entrada.isIntersecting) {
+              renderizarPagina(entrada.target);
+            }
+          });
+        }, { root: container, rootMargin: '600px 0px' });
+
+        placeholders.forEach((div) => pdfObserverAtual.observe(div));
+
       } catch (err) {
         container.innerHTML = '<div style="color:white;padding:40px 20px;">Não foi possível carregar o PDF.</div>';
         console.error('Erro ao renderizar PDF:', err);
@@ -643,6 +691,10 @@
       document.getElementById('visualizador').style.display = 'none';
       document.getElementById('visualizador-iframe').src = '';
       document.getElementById('visualizador-pdf-canvas').innerHTML = '';
+      if (pdfObserverAtual) {
+        pdfObserverAtual.disconnect();
+        pdfObserverAtual = null;
+      }
     });
 
     function mostrarApp(produtos, nomePessoa) {
