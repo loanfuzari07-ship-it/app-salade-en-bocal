@@ -546,7 +546,7 @@
       // Verifica se o e-mail tem pelo menos 1 acesso (produto principal comprado)
       const { data: acessos, error } = await sb
         .from('acessos')
-        .select('produto_id, nome, produtos ( nome, conteudo_url, imagem_url, tipo )')
+        .select('produto_id, nome, produtos ( nome, conteudo_url, imagem_url, tipo, ordem, abrir_externo, label_botao )')
         .eq('email', emailLimpo);
 
       if (error) {
@@ -564,12 +564,13 @@
       // Busca todos os produtos marcados como bônus (liberados pra qualquer cliente)
       const { data: bonus, error: erroBonus } = await sb
         .from('produtos')
-        .select('id, nome, conteudo_url, imagem_url, tipo')
+        .select('id, nome, conteudo_url, imagem_url, tipo, ordem, abrir_externo, label_botao')
         .eq('tipo', 'bonus');
 
       const produtosPrincipais = acessos.map(a => a.produtos);
       const produtosBonus = bonus || [];
-      const todosProdutos = [...produtosPrincipais, ...produtosBonus];
+      const todosProdutos = [...produtosPrincipais, ...produtosBonus]
+        .sort((a, b) => (a.ordem ?? 100) - (b.ordem ?? 100));
 
       localStorage.setItem('meuapp_email', emailLimpo);
 
@@ -708,19 +709,25 @@
       boasVindasEl.textContent = primeiroNome ? `Bienvenue, ${primeiroNome} !` : 'Bienvenue !';
 
       listaEl.innerHTML = produtos.map((produto, index) => {
-        const nome = produto?.nome || 'Produto';
+        const nome = produto?.nome || 'Produit';
         const url = produto?.conteudo_url || '#';
         const capa = produto?.imagem_url || '/icons/icon-512.png';
+        const abrirExterno = produto?.abrir_externo === true;
+        const labelBotao = produto?.label_botao || 'Accéder';
 
         window['produtoUrl' + index] = url;
         window['produtoNome' + index] = nome;
+
+        const botao = abrirExterno
+          ? `<a class="btn-acessar" href="${url}" target="_blank" rel="noopener">${labelBotao}</a>`
+          : `<button class="btn-acessar" onclick="abrirConteudo(produtoNome${index}, produtoUrl${index})">${labelBotao}</button>`;
 
         return `
           <div class="produto-card">
             <img class="produto-capa" src="${capa}" alt="${nome}">
             <div class="produto-info">
               <h3>${nome}</h3>
-              <button class="btn-acessar" onclick="abrirConteudo(produtoNome${index}, produtoUrl${index})">Accéder</button>
+              ${botao}
             </div>
           </div>
         `;
